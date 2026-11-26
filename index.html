@@ -40,9 +40,30 @@
   .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
   @keyframes d { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
   #direct { display: none; margin-top: 6px; background: #F2A516; color: #1C2315; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: 14px; text-decoration: none; }
+  /* Khung nhắc cuối màn hình */
   #hint { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); background: rgba(28,35,21,.97); color: #fff; border-radius: 16px; padding: 12px 40px 12px 14px; font-size: 13.5px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.35); display: none; z-index: 5; }
   #hint b { color: #F6D58A; } #hint .x { position: absolute; top: 8px; right: 8px; background: none; border: 0; color: #fff; font-size: 20px; line-height: 1; padding: 4px 8px; }
-  #hint .inst { display: none; margin-top: 9px; width: 100%; background: #F2A516; color: #1C2315; border: 0; border-radius: 12px; padding: 11px; font-weight: 800; font-size: 15px; }
+  #hint .row { display: flex; gap: 8px; margin-top: 9px; }
+  #hint .row button { flex: 1; border: 0; border-radius: 12px; padding: 10px 8px; font-weight: 800; font-size: 14px; }
+  #instBtn { display: none; background: #F2A516; color: #1C2315; } #guideBtn { background: rgba(255,255,255,.14); color: #fff; }
+  /* Hướng dẫn chi tiết iPhone / Android */
+  #guide { position: fixed; inset: 0; z-index: 9; background: #F3F1EA; color: #1F2617; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #guide .gh { position: sticky; top: 0; background: #2A3420; color: #fff; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; display: flex; align-items: center; gap: 12px; }
+  #guide .gh img { width: 40px; height: 40px; border-radius: 10px; } #guide .gh b { flex: 1; font-size: 16px; } #guide .gh small { display: block; font-weight: 400; font-size: 12px; color: #F6D58A; }
+  #guide .gh button { background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 14px; }
+  #guide .tabs { display: flex; gap: 6px; margin: 14px 16px 4px; background: #E4E1D4; border-radius: 13px; padding: 4px; }
+  #guide .tabs button { flex: 1; border: 0; background: none; border-radius: 10px; padding: 10px 6px; font-weight: 700; font-size: 14.5px; color: #4A5338; }
+  #guide .tabs button.on { background: #fff; color: #1F2617; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  #guide .pane { display: none; padding: 6px 16px 30px; } #guide .pane.on { display: block; }
+  #guide h3 { font-size: 15px; margin: 16px 2px 8px; color: #3A472C; }
+  #guide ol { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  #guide li { counter-increment: s; position: relative; background: #fff; border: 1px solid #E2DED0; border-radius: 14px; padding: 11px 12px 11px 50px; margin-bottom: 8px; font-size: 14.5px; line-height: 1.5; }
+  #guide li::before { content: counter(s); position: absolute; left: 12px; top: 11px; width: 26px; height: 26px; border-radius: 8px; background: #2A3420; color: #F6D58A; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  #guide li b { color: #1F2617; } #guide .k { display: inline-block; background: #F3F1EA; border: 1px solid #D9D4C3; border-radius: 6px; padding: 0 6px; font-weight: 700; }
+  #guide .note { background: #FFF4D6; border-radius: 12px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5; color: #5B4300; margin-top: 10px; }
+  #guide .done { background: #E8F5EC; color: #1E6A3A; border-radius: 12px; padding: 10px 12px; font-size: 13.5px; margin: 12px 16px 0; display: none; }
+  #guide .go { display: block; margin: 16px 16px 0; text-align: center; background: #2A3420; color: #F6D58A; border-radius: 14px; padding: 13px; font-weight: 800; text-decoration: none; font-size: 15px; }
+  #guide .inst2 { display: none; width: calc(100% - 32px); margin: 12px 16px 0; background: #F2A516; color: #1C2315; border: 0; border-radius: 14px; padding: 13px; font-weight: 800; font-size: 15.5px; }
 </style>
 </head>
 <body>
@@ -53,10 +74,52 @@
   <div class="dots"><i></i><i></i><i></i></div>
   <a id="direct" href="#">Mở ứng dụng</a>
 </div>
-<div id="hint"><button class="x" aria-label="Đóng">×</button><span id="hintTxt"></span><button class="inst" id="instBtn">Cài đặt KQCT-ANHK_CM</button></div>
+<div id="hint"><button class="x" aria-label="Đóng">×</button><span id="hintTxt"></span>
+  <div class="row"><button id="instBtn">Cài đặt ngay</button><button id="guideBtn">Xem hướng dẫn</button></div></div>
+
+<div id="guide" role="dialog" aria-label="Hướng dẫn thêm vào màn hình chính">
+  <div class="gh"><img src="icon-192.png" alt=""><b>Thêm vào màn hình chính<small>Biểu tượng Đội ANHK · tên KQCT-ANHK_CM</small></b><button id="gClose">Đóng</button></div>
+  <div class="done" id="gDone">✓ Đồng chí đang mở từ biểu tượng trên màn hình chính – đã cài xong.</div>
+  <button class="inst2" id="instBtn2">Cài đặt KQCT-ANHK_CM ngay</button>
+  <div class="tabs"><button data-t="and">Android</button><button data-t="ios">iPhone</button></div>
+
+  <div class="pane" data-p="and">
+    <h3>Chrome (đa số máy Android)</h3>
+    <ol>
+      <li>Mở <b>Chrome</b>, vào đúng link trang này (link <b>github.io</b>), chờ ứng dụng tải xong.</li>
+      <li>Nếu cuối màn hình có nút <b>Cài đặt ngay</b> → bấm → <b>Cài đặt</b>. Xong.</li>
+      <li>Nếu không có nút: bấm <span class="k">⋮</span> (góc trên bên phải) → <b>Cài đặt ứng dụng</b> (hoặc <b>Thêm vào màn hình chính</b>) → <b>Cài đặt</b> / <b>Thêm</b>.</li>
+      <li>Ra màn hình chính: có biểu tượng logo Đội, tên <b>KQCT-ANHK_CM</b>. Mở lên là toàn màn hình.</li>
+    </ol>
+    <h3>Samsung Internet (máy Samsung)</h3>
+    <ol>
+      <li>Mở link → bấm <span class="k">☰</span> (góc dưới bên phải).</li>
+      <li>Chọn <b>Thêm trang vào</b> → <b>Màn hình chờ</b> (hoặc bấm biểu tượng <span class="k">⬇</span> <b>Cài đặt</b> trên thanh địa chỉ nếu có).</li>
+    </ol>
+    <h3>Cốc Cốc</h3>
+    <ol><li>Mở link → <span class="k">⋮</span> → <b>Thêm vào màn hình chính</b> → <b>Thêm</b>.</li></ol>
+    <div class="note"><b>Mở từ Zalo:</b> không thêm được. Bấm <span class="k">⋯</span> (góc trên bên phải) → <b>Mở bằng trình duyệt</b> rồi làm như trên.<br>
+      <b>Đã có biểu tượng cũ</b> (link script.google.com): nhấn giữ biểu tượng cũ → <b>Gỡ / Xóa</b> để khỏi bị trùng. Lần đầu mở từ biểu tượng mới phải đăng nhập lại 01 lần.<br>
+      Chrome báo <b>"Đã cài đặt"</b>: ứng dụng đã có trong máy, tìm trong danh sách ứng dụng rồi kéo ra màn hình chính.</div>
+  </div>
+
+  <div class="pane" data-p="ios">
+    <h3>Safari (iPhone, iPad)</h3>
+    <ol>
+      <li>Mở link trang này bằng <b>Safari</b> (không mở trong Zalo).</li>
+      <li>Bấm nút <b>Chia sẻ</b> <span class="k">⬆︎</span> (ô vuông có mũi tên, ở thanh dưới hoặc trên).</li>
+      <li>Kéo xuống, chọn <b>Thêm vào MH chính</b>.</li>
+      <li>Tên đã điền sẵn <b>KQCT-ANHK_CM</b> → bấm <b>Thêm</b> (góc trên bên phải).</li>
+    </ol>
+    <div class="note"><b>Mở từ Zalo:</b> bấm <span class="k">⋯</span> → <b>Mở bằng trình duyệt</b> (Safari) rồi làm như trên.<br>
+      <b>Đã có biểu tượng cũ</b>: nhấn giữ biểu tượng cũ → <b>Xóa bookmark</b>. Lần đầu mở từ biểu tượng mới phải đăng nhập lại 01 lần.</div>
+  </div>
+  <a class="go" href="#" id="gGo">Vào ứng dụng</a>
+</div>
 <script>
   (function () {
-    var direct = document.getElementById('direct'), hint = document.getElementById('hint'), txt = document.getElementById('hintTxt'), inst = document.getElementById('instBtn');
+    var $ = function (s) { return document.querySelector(s); };
+    var direct = $('#direct'), hint = $('#hint'), txt = $('#hintTxt'), inst = $('#instBtn'), inst2 = $('#instBtn2'), guide = $('#guide');
     direct.href = APP_URL;
     var ua = navigator.userAgent || '';
     var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -66,27 +129,42 @@
     var seen = function () { try { return !!localStorage.getItem('kqct_hint'); } catch (e) { return false; } };
     var hide = function () { hint.style.display = 'none'; try { localStorage.setItem('kqct_hint', '1'); } catch (e) { } };
     hint.querySelector('.x').onclick = hide;
-    var show = function (html, keep) { txt.innerHTML = html; hint.style.display = 'block'; if (!keep) setTimeout(function () { if (inst.style.display !== 'block') hint.style.display = 'none'; }, 14000); };
+    var show = function (html, keep) { txt.innerHTML = html; hint.style.display = 'block'; if (!keep) setTimeout(function () { if (inst.style.display !== 'block') hint.style.display = 'none'; }, 15000); };
+
+    // Hướng dẫn chi tiết: tự chọn thẻ theo loại máy; mở bằng nút "Xem hướng dẫn" hoặc link .../?huongdan
+    var tab = function (t) {
+      [].forEach.call(document.querySelectorAll('#guide .tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === t); });
+      [].forEach.call(document.querySelectorAll('#guide .pane'), function (p) { p.classList.toggle('on', p.getAttribute('data-p') === t); });
+    };
+    [].forEach.call(document.querySelectorAll('#guide .tabs button'), function (b) { b.onclick = function () { tab(b.getAttribute('data-t')); }; });
+    var openGuide = function () { tab(isIOS ? 'ios' : 'and'); $('#gDone').style.display = standalone ? 'block' : 'none'; guide.style.display = 'block'; hint.style.display = 'none'; };
+    $('#guideBtn').onclick = openGuide;
+    $('#gClose').onclick = function () { guide.style.display = 'none'; };
+    $('#gGo').onclick = function (e) { e.preventDefault(); guide.style.display = 'none'; };
+    var wantGuide = /[?&#]huongdan\b/i.test(location.search + location.hash);
 
     // Android: Chrome / Edge / Samsung Internet cho cài đặt trực tiếp bằng nút
     var deferred = null;
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault(); deferred = e;
       if (standalone) return;
-      inst.style.display = 'block';
-      show('Cài <b>KQCT-ANHK_CM</b> lên điện thoại để mở nhanh từ màn hình chính, có biểu tượng Đội.', true);
+      inst.style.display = 'block'; inst2.style.display = 'block';
+      if (guide.style.display !== 'block') show('Cài <b>KQCT-ANHK_CM</b> lên điện thoại để mở nhanh từ màn hình chính, có biểu tượng Đội.', true);
     });
-    inst.onclick = function () {
-      if (!deferred) return;
+    var doInstall = function () {
+      if (!deferred) { openGuide(); return; }
       deferred.prompt();
-      deferred.userChoice.then(function (c) { deferred = null; inst.style.display = 'none'; if (c && c.outcome === 'accepted') hide(); else hint.style.display = 'none'; });
+      deferred.userChoice.then(function (c) { deferred = null; inst.style.display = 'none'; inst2.style.display = 'none'; if (c && c.outcome === 'accepted') { hide(); guide.style.display = 'none'; } else hint.style.display = 'none'; });
     };
-    window.addEventListener('appinstalled', hide);
+    inst.onclick = doInstall; inst2.onclick = doInstall;
+    window.addEventListener('appinstalled', function () { hide(); guide.style.display = 'none'; });
 
-    if (!standalone && !seen()) {
-      if (inApp) show('Đang mở trong Zalo / Facebook: bấm <b>⋯</b> → <b>Mở bằng trình duyệt</b> (Safari hoặc Chrome) để thêm vào màn hình chính.', true);
-      else if (isIOS) show('Thêm vào màn hình iPhone: bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên) → <b>Thêm vào MH chính</b> → <b>Thêm</b>.');
-      else if (isAndroid) setTimeout(function () { if (!deferred) show('Thêm vào màn hình Android: bấm <b>⋮</b> (góc trên bên phải Chrome) → <b>Thêm vào màn hình chính</b> hoặc <b>Cài đặt ứng dụng</b>.'); }, 2500);
+    if (wantGuide) openGuide();
+    else if (!standalone && !seen()) {
+      if (inApp) show('Đang mở trong Zalo / Facebook: bấm <b>⋯</b> → <b>Mở bằng trình duyệt</b> (Chrome hoặc Safari) để thêm vào màn hình chính.', true);
+      else if (isIOS) show('Thêm vào màn hình iPhone: bấm <b>Chia sẻ</b> (ô vuông có mũi tên) → <b>Thêm vào MH chính</b> → <b>Thêm</b>.');
+      else if (isAndroid) setTimeout(function () { if (!deferred) show('Thêm vào màn hình Android: bấm <b>⋮</b> (góc trên bên phải) → <b>Cài đặt ứng dụng</b> hoặc <b>Thêm vào màn hình chính</b>.'); }, 2500);
+      else show('Mở link này trên điện thoại (Android: Chrome · iPhone: Safari) để thêm biểu tượng KQCT-ANHK_CM vào màn hình chính.');
     }
 
     // Service worker: cần cho Android cài như ứng dụng (không lưu dữ liệu cán bộ)
@@ -94,6 +172,7 @@
 
     if (CHE_DO === 'chuyen' || APP_URL.indexOf('DAN_MA') >= 0) {
       if (APP_URL.indexOf('DAN_MA') >= 0) { document.querySelector('#splash small').textContent = 'Chưa dán link ứng dụng vào trang khởi động (APP_URL).'; return; }
+      if (wantGuide) return;
       location.replace(APP_URL); setTimeout(function () { direct.style.display = 'inline-block'; }, 4000); return;
     }
     if (!navigator.onLine) { document.querySelector('#splash small').textContent = 'Không có kết nối mạng. Kiểm tra mạng rồi mở lại.'; direct.style.display = 'inline-block'; return; }
