@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<!--
+  TRANG KHỞI ĐỘNG "KQCT-ANHK_CM" – dùng cho iPhone (Safari) và Android (Chrome, Cốc Cốc, Edge, Samsung Internet)
+  Mục đích: khi thêm vào Màn hình chính / cài đặt ứng dụng có ĐÚNG biểu tượng Đội ANHK Cà Mau và tên KQCT-ANHK_CM.
+  Google Apps Script không cho đặt biểu tượng, nên dùng trang nhỏ này làm "cửa vào" ứng dụng.
+
+  CHỈ CẦN SỬA 01 DÒNG: dán link ứng dụng (kết thúc bằng /exec) vào APP_URL bên dưới.
+  CHE_DO: 'nhung'  = mở ứng dụng ngay trong trang này, toàn màn hình như ứng dụng (mặc định)
+          'chuyen' = chuyển thẳng sang link ứng dụng (dùng nếu chế độ 'nhung' gặp trục trặc)
+-->
+<script>
+  var APP_URL = 'https://script.google.com/macros/s/DAN_MA_TRIEN_KHAI_VAO_DAY/exec';
+  var CHE_DO = 'nhung';
+</script>
+<title>KQCT-ANHK_CM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KQCT-ANHK_CM">
+<meta name="application-name" content="KQCT-ANHK_CM">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#2A3420">
+<meta name="description" content="Theo dõi kết quả công tác – Đội An ninh hàng không, Công an tỉnh Cà Mau">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  html, body { margin: 0; height: 100%; background: #2A3420; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #F3F1EA; opacity: 0; transition: opacity .25s; }
+  #app.on { opacity: 1; }
+  #splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #F6D58A; text-align: center; padding: 24px; }
+  #splash img { width: 132px; height: 132px; border-radius: 30px; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
+  #splash b { font-size: 18px; letter-spacing: .4px; color: #fff; }
+  #splash small { font-size: 13px; opacity: .85; }
+  .dots { display: flex; gap: 7px; } .dots i { width: 8px; height: 8px; border-radius: 50%; background: #F2A516; animation: d 1s infinite ease-in-out; }
+  .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes d { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
+  #direct { display: none; margin-top: 6px; background: #F2A516; color: #1C2315; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: 14px; text-decoration: none; }
+  #hint { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); background: rgba(28,35,21,.97); color: #fff; border-radius: 16px; padding: 12px 40px 12px 14px; font-size: 13.5px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.35); display: none; z-index: 5; }
+  #hint b { color: #F6D58A; } #hint .x { position: absolute; top: 8px; right: 8px; background: none; border: 0; color: #fff; font-size: 20px; line-height: 1; padding: 4px 8px; }
+  #hint .inst { display: none; margin-top: 9px; width: 100%; background: #F2A516; color: #1C2315; border: 0; border-radius: 12px; padding: 11px; font-weight: 800; font-size: 15px; }
+</style>
+</head>
+<body>
+<div id="splash">
+  <img src="apple-touch-icon.png" alt="Đội ANHK Cà Mau">
+  <b>KQCT-ANHK_CM</b>
+  <small>Theo dõi kết quả công tác – Đội An ninh hàng không</small>
+  <div class="dots"><i></i><i></i><i></i></div>
+  <a id="direct" href="#">Mở ứng dụng</a>
+</div>
+<div id="hint"><button class="x" aria-label="Đóng">×</button><span id="hintTxt"></span><button class="inst" id="instBtn">Cài đặt KQCT-ANHK_CM</button></div>
+<script>
+  (function () {
+    var direct = document.getElementById('direct'), hint = document.getElementById('hint'), txt = document.getElementById('hintTxt'), inst = document.getElementById('instBtn');
+    direct.href = APP_URL;
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var isAndroid = /Android/i.test(ua);
+    var inApp = /Zalo|FBAN|FBAV|Instagram|Line\//i.test(ua);
+    var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    var seen = function () { try { return !!localStorage.getItem('kqct_hint'); } catch (e) { return false; } };
+    var hide = function () { hint.style.display = 'none'; try { localStorage.setItem('kqct_hint', '1'); } catch (e) { } };
+    hint.querySelector('.x').onclick = hide;
+    var show = function (html, keep) { txt.innerHTML = html; hint.style.display = 'block'; if (!keep) setTimeout(function () { if (inst.style.display !== 'block') hint.style.display = 'none'; }, 14000); };
+
+    // Android: Chrome / Edge / Samsung Internet cho cài đặt trực tiếp bằng nút
+    var deferred = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault(); deferred = e;
+      if (standalone) return;
+      inst.style.display = 'block';
+      show('Cài <b>KQCT-ANHK_CM</b> lên điện thoại để mở nhanh từ màn hình chính, có biểu tượng Đội.', true);
+    });
+    inst.onclick = function () {
+      if (!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.then(function (c) { deferred = null; inst.style.display = 'none'; if (c && c.outcome === 'accepted') hide(); else hint.style.display = 'none'; });
+    };
+    window.addEventListener('appinstalled', hide);
+
+    if (!standalone && !seen()) {
+      if (inApp) show('Đang mở trong Zalo / Facebook: bấm <b>⋯</b> → <b>Mở bằng trình duyệt</b> (Safari hoặc Chrome) để thêm vào màn hình chính.', true);
+      else if (isIOS) show('Thêm vào màn hình iPhone: bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên) → <b>Thêm vào MH chính</b> → <b>Thêm</b>.');
+      else if (isAndroid) setTimeout(function () { if (!deferred) show('Thêm vào màn hình Android: bấm <b>⋮</b> (góc trên bên phải Chrome) → <b>Thêm vào màn hình chính</b> hoặc <b>Cài đặt ứng dụng</b>.'); }, 2500);
+    }
+
+    // Service worker: cần cho Android cài như ứng dụng (không lưu dữ liệu cán bộ)
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () { });
+
+    if (CHE_DO === 'chuyen' || APP_URL.indexOf('DAN_MA') >= 0) {
+      if (APP_URL.indexOf('DAN_MA') >= 0) { document.querySelector('#splash small').textContent = 'Chưa dán link ứng dụng vào trang khởi động (APP_URL).'; return; }
+      location.replace(APP_URL); setTimeout(function () { direct.style.display = 'inline-block'; }, 4000); return;
+    }
+    if (!navigator.onLine) { document.querySelector('#splash small').textContent = 'Không có kết nối mạng. Kiểm tra mạng rồi mở lại.'; direct.style.display = 'inline-block'; return; }
+    var f = document.createElement('iframe');
+    f.id = 'app'; f.title = 'KQCT-ANHK_CM'; f.allow = 'clipboard-write';
+    f.src = APP_URL;
+    f.onload = function () { f.className = 'on'; setTimeout(function () { document.getElementById('splash').style.display = 'none'; }, 300); };
+    document.body.appendChild(f);
+    setTimeout(function () { if (f.className !== 'on') direct.style.display = 'inline-block'; }, 15000);
+  })();
+</script>
+</body>
+</html>
